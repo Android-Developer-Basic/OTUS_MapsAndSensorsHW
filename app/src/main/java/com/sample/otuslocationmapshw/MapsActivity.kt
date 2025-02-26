@@ -4,6 +4,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.result.contract.ActivityResultContracts
@@ -31,7 +32,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         ActivityResultContracts.StartActivityForResult()
     ) {
         if (it.resultCode == CameraActivity.SUCCESS_RESULT_CODE) {
-            // TODO("Обновить точки на карте при получении результата от камеры")
+            // Обновляем точки на карте при получении результата от камеры
+            showPreviewsOnMap()
         }
     }
 
@@ -40,10 +42,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         binding = ActivityMapsBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
-        // TODO("Вызвать инициализацию карты")
+        mapFragment.getMapAsync(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -57,6 +58,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 cameraForResultLauncher.launch(Intent(this, CameraActivity::class.java))
                 true
             }
+
             else -> {
                 super.onOptionsItemSelected(item)
             }
@@ -65,30 +67,66 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
-
         showPreviewsOnMap()
     }
 
     private fun showPreviewsOnMap() {
         map.clear()
         val folder = File("${filesDir.absolutePath}/photos/")
-        folder.listFiles()?.forEach {
-            val exifInterface = ExifInterface(it)
-            val location = locationDataUtils.getLocationFromExif(exifInterface)
-            val point = LatLng(location.latitude, location.longitude)
-            val pinBitmap = Bitmap.createScaledBitmap(
-                BitmapFactory.decodeFile(
-                    it.path,
-                    BitmapFactory.Options().apply {
+
+        // Проверка существования папки
+        if (!folder.exists() || !folder.isDirectory) {
+            Log.e("MapsActivity", "Папка с фото не существует: ${folder.absolutePath}")
+            return
+        }
+
+        // Логирование количества файлов
+        Log.d("MapsActivity", "Найдено файлов: ${folder.listFiles()?.size ?: 0}")
+
+        var lastPoint: LatLng? = null
+
+        // Перебор всех файлов в папке
+        folder.listFiles()?.forEach { file ->
+            if (!file.isFile) return@forEach // Пропускаем, если это не файл
+
+            try {
+                // Чтение EXIF-данных
+                val exifInterface = ExifInterface(file)
+                val location = locationDataUtils.getLocationFromExif(exifInterface)
+
+                if (location != null) {
+                    val point = LatLng(location.latitude, location.longitude)
+                    lastPoint = point // Сохраняем последнюю точку
+
+                    // Декодирование изображения
+                    val options = BitmapFactory.Options().apply {
                         inPreferredConfig = Bitmap.Config.ARGB_8888
-                    }), 64, 64, false
-            )
-            // TODO("Указать pinBitmap как иконку для маркера")
-            map.addMarker(
-                MarkerOptions()
-                    .position(point)
-            )
-            // TODO("Передвинуть карту к местоположению последнего фото")
+                    }
+                    val bitmap = BitmapFactory.decodeFile(file.path, options)
+
+                    if (bitmap == null) {
+                        Log.e("MapsActivity", "Не удалось декодировать изображение: ${file.name}")
+                        return@forEach
+                    }
+
+                    // Создание уменьшенной версии изображения для маркера
+                    val pinBitmap = Bitmap.createScaledBitmap(bitmap, 64, 64, false)
+
+                    // Добавление маркера на карту
+                    map.addMarker(
+                        MarkerOptions()
+                            .position(point)
+                            .icon(BitmapDescriptorFactory.fromBitmap(pinBitmap))
+                    )
+                }
+            } catch (e: Exception) {
+                Log.e("MapsActivity", "Ошибка при чтении EXIF-данных из файла: ${file.name}", e)
+            }
+        }
+
+        // Перемещение камеры к последнему фото
+        lastPoint?.let {
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(it, 20f))
         }
     }
 }

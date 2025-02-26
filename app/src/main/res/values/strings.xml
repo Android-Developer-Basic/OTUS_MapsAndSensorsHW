@@ -3,4 +3,8 @@
     <string name="title_activity_maps">MapsActivity</string>
     <string name="action_add">Добавить</string>
     <string name="aligne_your_phone">Рекомендуем разместить телефон прямо</string>
+    <string name="photo_is_saved_toast_message">Success photo saved</string>
+    <string name="accelerometer_null">Accelerometer == null</string>
+    <string name="permissions_not_granted_by_the_user">Permissions not granted by the user</string>
+    <string name="error_getlastlocation">Error getLastLocation method</string>
 </resources>
