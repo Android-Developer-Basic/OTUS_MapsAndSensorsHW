@@ -3,4 +3,16 @@
     <string name="title_activity_maps">MapsActivity</string>
     <string name="action_add">Добавить</string>
     <string name="aligne_your_phone">Рекомендуем разместить телефон прямо</string>
+    <string name="dialog_image_view">dialog image view</string>
+    <string name="permissions_not_granted_by_the_user">Permissions not granted by the user.</string>
+    <string name="photo_saved">Photo saved: %1$s</string>
+    <string name="error_saving_exif_metadata">Error saving EXIF metadata</string>
+    <string name="photo_saved_to">Photo saved to: %1$s</string>
+    <string name="error_saving_photo">Error saving photo</string>
+    <string name="an_error_occurred_while_saving_the_photo">An error occurred while saving the photo: %1$s</string>
+    <string name="error_getting_location">Error getting location</string>
+    <string name="use_case_binding_failed">Use case binding failed</string>
+    <string name="permissions_must_be_provided">Permissions must be provided!</string>
+    <string name="permissions_have_been_received">Permissions have been received!</string>
+    <string name="there_is_no_permission_to_read_images">There is no permission to read images!</string>
 </resources>

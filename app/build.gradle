@@ -33,7 +33,25 @@ android {
     }
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
+    buildscript {
+        dependencies {
+            classpath "com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin:2.0.1"
+        }
+    }
+}
+
+secrets {
+    // To add your Maps API key to this project:
+    // 1. If the secrets.properties file does not exist, create it in the same folder as the local.properties file.
+    // 2. Add this line, where YOUR_API_KEY is your API key:
+    //        MAPS_API_KEY=YOUR_API_KEY
+    propertiesFileName = "secrets.properties"
+
+    // A properties file containing default secret values. This file can be
+    // checked in version control.
+    defaultPropertiesFileName = "local.properties"
 }
 
 dependencies {
@@ -41,14 +59,16 @@ dependencies {
     implementation 'androidx.core:core-ktx:1.15.0'
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'com.google.android.material:material:1.12.0'
-    implementation 'com.google.android.gms:play-services-maps:19.0.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.2.0'
+    implementation 'com.google.android.gms:play-services-maps:19.1.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation 'androidx.camera:camera-core:1.4.1'
     implementation 'androidx.camera:camera-lifecycle:1.4.1'
     implementation 'androidx.camera:camera-camera2:1.4.1'
     implementation 'androidx.camera:camera-view:1.4.1'
     implementation 'com.google.android.gms:play-services-location:21.3.0'
-    implementation 'androidx.exifinterface:exifinterface:1.3.7'
+    implementation 'androidx.exifinterface:exifinterface:1.4.0'
+    implementation 'com.github.bumptech.glide:glide:4.15.1'  // или актуальная версия
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
