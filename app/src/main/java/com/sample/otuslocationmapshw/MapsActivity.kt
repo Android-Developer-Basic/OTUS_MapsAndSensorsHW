@@ -20,6 +20,7 @@ import com.sample.otuslocationmapshw.camera.CameraActivity
 import com.sample.otuslocationmapshw.data.utils.LocationDataUtils
 import com.sample.otuslocationmapshw.databinding.ActivityMapsBinding
 import java.io.File
+import androidx.core.graphics.scale
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -31,7 +32,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         ActivityResultContracts.StartActivityForResult()
     ) {
         if (it.resultCode == CameraActivity.SUCCESS_RESULT_CODE) {
-            // TODO("Обновить точки на карте при получении результата от камеры")
+            showPreviewsOnMap()
         }
     }
 
@@ -43,7 +44,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
-        // TODO("Вызвать инициализацию карты")
+
+        mapFragment.getMapAsync(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -76,19 +78,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             val exifInterface = ExifInterface(it)
             val location = locationDataUtils.getLocationFromExif(exifInterface)
             val point = LatLng(location.latitude, location.longitude)
-            val pinBitmap = Bitmap.createScaledBitmap(
-                BitmapFactory.decodeFile(
-                    it.path,
-                    BitmapFactory.Options().apply {
-                        inPreferredConfig = Bitmap.Config.ARGB_8888
-                    }), 64, 64, false
-            )
-            // TODO("Указать pinBitmap как иконку для маркера")
+            val pinBitmap = BitmapFactory.decodeFile(
+                it.path,
+                BitmapFactory.Options().apply {
+                    inPreferredConfig = Bitmap.Config.ARGB_8888
+                }).scale(64, 64, false)
             map.addMarker(
                 MarkerOptions()
                     .position(point)
+                    .icon(BitmapDescriptorFactory.fromBitmap(pinBitmap))
             )
-            // TODO("Передвинуть карту к местоположению последнего фото")
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(point, 20f))
         }
     }
 }
