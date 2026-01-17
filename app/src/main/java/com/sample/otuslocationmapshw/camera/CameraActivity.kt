@@ -26,6 +26,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlin.invoke
 import kotlin.math.abs
 
 class CameraActivity : AppCompatActivity() {
@@ -58,9 +59,8 @@ class CameraActivity : AppCompatActivity() {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
-        // TODO("Получить экземпляр SensorManager")
-        // TODO("Добавить проверку на наличие датчика акселерометра и присвоить значение tiltSensor")
-        tiltSensor = TODO("Get tilt sensor")
+        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
+        tiltSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         cameraProviderFuture.addListener({
             cameraProvider = cameraProviderFuture.get()
         }, ContextCompat.getMainExecutor(this))
@@ -81,14 +81,24 @@ class CameraActivity : AppCompatActivity() {
         }
     }
 
-    // TODO("Подписаться на получение событий обновления датчика")
+    override fun onResume() {
+        super.onResume()
+        tiltSensor?.let {
+            sensorManager.registerListener(
+                sensorEventListener,
+                it,
+                SensorManager.SENSOR_DELAY_UI
+            )
+        }
+    }
 
-    // TODO("Остановить получение событий от датчика")
+    override fun onPause() {
+        super.onPause()
+        sensorManager.unregisterListener(sensorEventListener)
+    }
 
     override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
+        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_CODE_PERMISSIONS) {
@@ -96,9 +106,7 @@ class CameraActivity : AppCompatActivity() {
                 startCamera()
             } else {
                 Toast.makeText(
-                    this,
-                    "Permissions not granted by the user.",
-                    Toast.LENGTH_SHORT
+                    this, "Permissions not granted by the user.", Toast.LENGTH_SHORT
                 ).show()
                 finish()
             }
@@ -115,21 +123,42 @@ class CameraActivity : AppCompatActivity() {
             if (!folder.exists()) {
                 folder.mkdirs()
             }
-            val filePath = folderPath + SimpleDateFormat(FILENAME_FORMAT, Locale.getDefault()).format(Date())
+            val filePath =
+                folderPath + SimpleDateFormat(FILENAME_FORMAT, Locale.getDefault()).format(Date())
 
-            // TODO("4. Добавить установку местоположения в метаданные фото")
-            val outputFileOptions = ImageCapture.OutputFileOptions.Builder(File(filePath))
-                .build()
+            val metadata = ImageCapture.Metadata().apply {
+                this.location = location
+            }
+            val outputFileOptions =
+                ImageCapture.OutputFileOptions.Builder(File(filePath)).setMetadata(metadata).build()
 
-            // TODO("Добавить вызов CameraX для фото")
-            // TODO("Вывести Toast о том, что фото успешно сохранено и закрыть текущее активити c указанием кода результата SUCCESS_RESULT_CODE")
-            // imageCapture...
+            imageCapture.takePicture(
+                outputFileOptions,
+                ContextCompat.getMainExecutor(this),
+                object : ImageCapture.OnImageSavedCallback {
+                    override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                        Toast.makeText(baseContext, "Фото успешно сохранено", Toast.LENGTH_SHORT)
+                            .show()
+                        setResult(SUCCESS_RESULT_CODE)
+                        finish()
+                    }
+
+                    override fun onError(exception: androidx.camera.core.ImageCaptureException) {
+                        Log.e("CameraXApp", "Ошибка при съемке: ${exception.message}", exception)
+                        Toast.makeText(baseContext, "Ошибка сохранения фото", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+                })
         }
     }
 
     @SuppressLint("MissingPermission")
     private fun getLastLocation(callback: (location: Location?) -> Unit) {
-        // TODO("Добавить получение местоположения от fusedLocationClient и передать результат в callback после получения")
+        fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+            callback.invoke(location)
+        }.addOnFailureListener {
+            callback.invoke(null)
+        }
     }
 
     private fun startCamera() {
@@ -137,11 +166,9 @@ class CameraActivity : AppCompatActivity() {
         cameraProviderFuture.addListener({
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 
-            val preview = Preview.Builder()
-                .build()
-                .also {
-                    it.setSurfaceProvider(binding.cameraPreview.surfaceProvider)
-                }
+            val preview = Preview.Builder().build().also {
+                it.setSurfaceProvider(binding.cameraPreview.surfaceProvider)
+            }
 
             imageCapture = ImageCapture.Builder().build()
 
@@ -168,9 +195,10 @@ class CameraActivity : AppCompatActivity() {
         private const val TAG = "CameraXApp"
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
         private const val REQUEST_CODE_PERMISSIONS = 10
-        // TODO("Указать набор требуемых разрешений")
         private val REQUIRED_PERMISSIONS: Array<String> = mutableListOf<String>(
-            // TODO("Добавить требуемые разрешения")
+            android.Manifest.permission.CAMERA,
+            android.Manifest.permission.ACCESS_FINE_LOCATION,
+            android.Manifest.permission.ACCESS_COARSE_LOCATION
         ).toTypedArray()
 
         const val SUCCESS_RESULT_CODE = 15

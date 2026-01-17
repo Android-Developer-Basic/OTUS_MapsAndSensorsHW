@@ -31,7 +31,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         ActivityResultContracts.StartActivityForResult()
     ) {
         if (it.resultCode == CameraActivity.SUCCESS_RESULT_CODE) {
-            // TODO("Обновить точки на карте при получении результата от камеры")
+            showPreviewsOnMap()
         }
     }
 
@@ -41,9 +41,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         binding = ActivityMapsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val mapFragment = supportFragmentManager
-            .findFragmentById(R.id.map) as SupportMapFragment
-        // TODO("Вызвать инициализацию карты")
+        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+        mapFragment.getMapAsync(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -57,6 +56,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 cameraForResultLauncher.launch(Intent(this, CameraActivity::class.java))
                 true
             }
+
             else -> {
                 super.onOptionsItemSelected(item)
             }
@@ -72,23 +72,24 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun showPreviewsOnMap() {
         map.clear()
         val folder = File("${filesDir.absolutePath}/photos/")
+        var lastPoint: LatLng? = null
         folder.listFiles()?.forEach {
             val exifInterface = ExifInterface(it)
             val location = locationDataUtils.getLocationFromExif(exifInterface)
             val point = LatLng(location.latitude, location.longitude)
+            lastPoint = point
             val pinBitmap = Bitmap.createScaledBitmap(
                 BitmapFactory.decodeFile(
-                    it.path,
-                    BitmapFactory.Options().apply {
+                    it.path, BitmapFactory.Options().apply {
                         inPreferredConfig = Bitmap.Config.ARGB_8888
                     }), 64, 64, false
             )
-            // TODO("Указать pinBitmap как иконку для маркера")
             map.addMarker(
-                MarkerOptions()
-                    .position(point)
+                MarkerOptions().position(point).icon(BitmapDescriptorFactory.fromBitmap(pinBitmap))
             )
-            // TODO("Передвинуть карту к местоположению последнего фото")
+            lastPoint?.let {
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(it, 10f))
+            }
         }
     }
 }
