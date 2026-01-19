@@ -31,7 +31,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         ActivityResultContracts.StartActivityForResult()
     ) {
         if (it.resultCode == CameraActivity.SUCCESS_RESULT_CODE) {
-            // TODO("Обновить точки на карте при получении результата от камеры")
+            // Обновление точек на карте при успешном сохранении нового фото
+            if (::map.isInitialized) {
+                showPreviewsOnMap()
+            }
         }
     }
 
@@ -43,7 +46,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
-        // TODO("Вызвать инициализацию карты")
+        // Асинхронная инициализация карты через getMapAsync()
+        // Передаем this (MapsActivity реализует OnMapReadyCallback)
+        mapFragment.getMapAsync(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -83,12 +88,21 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         inPreferredConfig = Bitmap.Config.ARGB_8888
                     }), 64, 64, false
             )
-            // TODO("Указать pinBitmap как иконку для маркера")
+            // Добавление маркера с превью фото в качестве иконки
             map.addMarker(
                 MarkerOptions()
                     .position(point)
+                    // Установка превью как иконки маркера
+                    .icon(BitmapDescriptorFactory.fromBitmap(pinBitmap))
             )
-            // TODO("Передвинуть карту к местоположению последнего фото")
+        }
+        // Перемещение камеры к местоположению последнего фото с анимацией
+        folder.listFiles()?.lastOrNull()?.let { lastFile ->
+            val exifInterface = ExifInterface(lastFile)
+            val location = locationDataUtils.getLocationFromExif(exifInterface)
+            val lastPoint = LatLng(location.latitude, location.longitude)
+            // Анимация перемещения камеры к точке с зумом 15
+            map.animateCamera(CameraUpdateFactory.newLatLngZoom(lastPoint, 15f))
         }
     }
 }
