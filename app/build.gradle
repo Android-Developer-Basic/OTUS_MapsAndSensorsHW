@@ -4,6 +4,13 @@ plugins {
     id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
 }
 
+// Настройка secrets-gradle-plugin для использования API ключа из local.properties
+secrets {
+    propertiesFileName = 'local.properties'
+    defaultPropertiesFileName = 'local.properties'
+    ignoreList.add("keyToIgnore")
+}
+
 android {
     namespace 'com.sample.otuslocationmapshw'
     compileSdk 35
@@ -15,6 +22,7 @@ android {
         versionCode 1
         versionName "1.0"
 
+        buildConfigField "String", "MAPS_API_KEY", "\"${project.findProperty('MAPS_API_KEY') ?: ''}\""
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -33,6 +41,7 @@ android {
     }
     buildFeatures {
         viewBinding true
+        buildConfig true
     }
 }
 
