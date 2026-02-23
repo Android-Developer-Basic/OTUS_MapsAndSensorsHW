@@ -32,6 +32,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     ) {
         if (it.resultCode == CameraActivity.SUCCESS_RESULT_CODE) {
             // TODO("Обновить точки на карте при получении результата от камеры")
+            showPreviewsOnMap()
         }
     }
 
@@ -43,7 +44,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
-        // TODO("Вызвать инициализацию карты")
+        mapFragment.getMapAsync { googleMap ->
+            onMapReady(googleMap)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -57,6 +60,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 cameraForResultLauncher.launch(Intent(this, CameraActivity::class.java))
                 true
             }
+
             else -> {
                 super.onOptionsItemSelected(item)
             }
@@ -87,8 +91,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             map.addMarker(
                 MarkerOptions()
                     .position(point)
+                    .icon(BitmapDescriptorFactory.fromBitmap(pinBitmap))
             )
             // TODO("Передвинуть карту к местоположению последнего фото")
+            map.moveCamera(CameraUpdateFactory.newLatLng(point))
         }
     }
 }
