@@ -27,13 +27,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var binding: ActivityMapsBinding
 
     private val locationDataUtils = LocationDataUtils()
-    private val cameraForResultLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) {
-        if (it.resultCode == CameraActivity.SUCCESS_RESULT_CODE) {
-            // TODO("Обновить точки на карте при получении результата от камеры")
+
+    private val cameraForResultLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == CameraActivity.SUCCESS_RESULT_CODE) showPreviewsOnMap()
         }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,9 +39,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         binding = ActivityMapsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val mapFragment = supportFragmentManager
-            .findFragmentById(R.id.map) as SupportMapFragment
-        // TODO("Вызвать инициализацию карты")
+        (supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment)
+            .getMapAsync(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -51,44 +48,50 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean =
+        when (item.itemId) {
             R.id.action_add -> {
                 cameraForResultLauncher.launch(Intent(this, CameraActivity::class.java))
                 true
             }
-            else -> {
-                super.onOptionsItemSelected(item)
-            }
+            else -> super.onOptionsItemSelected(item)
         }
-    }
 
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
-
         showPreviewsOnMap()
     }
 
     private fun showPreviewsOnMap() {
         map.clear()
+
         val folder = File("${filesDir.absolutePath}/photos/")
-        folder.listFiles()?.forEach {
-            val exifInterface = ExifInterface(it)
-            val location = locationDataUtils.getLocationFromExif(exifInterface)
+
+        folder.listFiles()?.forEach { file ->
+
+            val exif = ExifInterface(file)
+            val location = locationDataUtils.getLocationFromExif(exif)
             val point = LatLng(location.latitude, location.longitude)
-            val pinBitmap = Bitmap.createScaledBitmap(
+
+            val bitmap = Bitmap.createScaledBitmap(
                 BitmapFactory.decodeFile(
-                    it.path,
+                    file.path,
                     BitmapFactory.Options().apply {
                         inPreferredConfig = Bitmap.Config.ARGB_8888
-                    }), 64, 64, false
+                    }
+                ),
+                64,
+                64,
+                false
             )
-            // TODO("Указать pinBitmap как иконку для маркера")
+
             map.addMarker(
                 MarkerOptions()
                     .position(point)
+                    .icon(BitmapDescriptorFactory.fromBitmap(bitmap))
             )
-            // TODO("Передвинуть карту к местоположению последнего фото")
+
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(point, 10f))
         }
     }
 }
