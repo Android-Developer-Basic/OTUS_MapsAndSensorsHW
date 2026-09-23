@@ -1,6 +1,15 @@
 <resources>
     <string name="app_name">Photo app HW</string>
-    <string name="title_activity_maps">MapsActivity</string>
     <string name="action_add">Добавить</string>
+    <string name="take_photo">Сделать фотографию</string>
     <string name="aligne_your_phone">Рекомендуем разместить телефон прямо</string>
+    <string name="permissions_not_granted">Для съёмки нужны разрешения камеры и местоположения</string>
+    <string name="location_permission_not_granted">Нет разрешения на получение местоположения</string>
+    <string name="location_not_available">Не удалось определить местоположение. Проверьте, что геолокация включена, и попробуйте снова</string>
+    <string name="camera_not_ready">Камера не готова</string>
+    <string name="camera_start_error">Не удалось запустить камеру</string>
+    <string name="accelerometer_not_available">На устройстве нет акселерометра, подсказка наклона недоступна</string>
+    <string name="photo_directory_error">Не удалось подготовить каталог для фотографии</string>
+    <string name="photo_saved">Фотография сохранена</string>
+    <string name="photo_capture_error">Не удалось сохранить фотографию. Попробуйте снова</string>
 </resources>
