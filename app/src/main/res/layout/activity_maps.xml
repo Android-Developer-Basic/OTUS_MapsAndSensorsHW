@@ -1,22 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar" />
+
+    <TextView
+        android:id="@+id/maps_key_status"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:title="@string/app_name" />
+        android:padding="16dp"
+        android:text="@string/maps_key_missing"
+        android:textAppearance="?attr/textAppearanceBody2"
+        android:visibility="gone" />
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         tools:context=".MapsActivity" />
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</LinearLayout>

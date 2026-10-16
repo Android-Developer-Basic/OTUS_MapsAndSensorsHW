@@ -1,6 +1,13 @@
 <resources>
     <string name="app_name">Photo app HW</string>
-    <string name="title_activity_maps">MapsActivity</string>
+    <string name="take_photo">Сделать фотографию</string>
+    <string name="maps_key_missing">Не настроен ключ Google Maps. Добавьте MAPS_API_KEY в local.properties и пересоберите приложение. Съёмка с геотегами доступна без карты.</string>
     <string name="action_add">Добавить</string>
     <string name="aligne_your_phone">Рекомендуем разместить телефон прямо</string>
+    <string name="accelerometer_unavailable">На устройстве нет акселерометра</string>
+    <string name="location_unavailable">Не удалось определить местоположение. Проверьте разрешение и включите геолокацию.</string>
+    <string name="photo_save_error">Не удалось сохранить фотографию</string>
+    <string name="photo_saved">Фотография сохранена</string>
+    <string name="permissions_required">Для камеры и геотегов нужны разрешения камеры и геолокации.</string>
+    <string name="camera_unavailable">Не удалось запустить камеру</string>
 </resources>
